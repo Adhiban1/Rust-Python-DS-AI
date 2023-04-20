@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+        </script>
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>Linear Regression in Python & Rust from Scratch</h1>
+    <a href="https://github.com/Adhiban1/Rust-Python-DS-AI/tree/main/Linear%20Regression/linear_regression1">Github link</a>
+    <p>I have successfully implemented a linear regression algorithm from scratch using Python and Rust programming
+        languages. The algorithm is built upon fundamental mathematical concepts and principles that are widely used in
+        machine learning.</p>
+
+    <p>To compile rust lib:</p>
+    <pre>
+        <code id="htmlViewer" style="color:rgb(221, 221, 221); font-weight:400;background-color:rgb(39, 40, 34);background:rgb(39, 40, 34);display:block;padding: .5em;">cargo build <span style="color:rgb(221, 221, 221); font-weight:400;">--release</span></code></pre>
+    Run Python:
+    <pre>
+        <code id="htmlViewer" style="color:rgb(221, 221, 221); font-weight:400;background-color:rgb(39, 40, 34);background:rgb(39, 40, 34);display:block;padding: .5em;">python <span style="color:rgb(249, 38, 114); font-weight:700;">main</span><span style="color:rgb(221, 221, 221); font-weight:400;">.py</span></code></pre>
+    Output:
+    <img style="width: 100%;" src="./graph.jpg" alt="">
+    <hr>
+    <div style="height: 250px;"></div>
+    <h2>Maths formula</h2>
+
+    <h3>Line equation</h3>
+    \(y = mx+c\)<br><br>
+
+    <b>here we have to find optimal value of \(m\) and \(c\)</b>
+
+    <hr>
+
+    <h3>Loss [MSE]</h3>
+
+    \(loss = \frac{1}{N} \sum (y_{true} - y)^2 \dots\) Here \(N\) is number of points <br><br>
+
+    \(loss = \frac{1}{N} \sum (y_{true} - mx -c)^2\)<br><br>
+
+    <hr>
+    
+    <h3>Grad</h3>
+
+    \(\displaystyle \triangle m = \frac{d}{dm} \left\{ \frac{1}{N} \sum (y_{true} - mx -c)^2 \right\}\)<br><br>
+
+    \(\displaystyle = \frac{1}{N}\frac{d}{dm} \left\{ \sum (y_{true} - mx -c)^2 \right\}\)<br><br>
+
+    \(\displaystyle = \frac{1}{N} \sum \frac{d}{dm} (y_{true} - mx -c)^2\)<br><br>
+
+    \(\displaystyle = \frac{1}{N} \sum \left\{ (y_{true} - mx -c) \cdot \frac{d}{dm}(-mx) \right\}\)<br><br>
+
+    \(\displaystyle = \frac{1}{N} \sum \left\{ (y_{true} - mx -c) \cdot (-x) \right\}\)<br><br>
+
+    \(\displaystyle \triangle m = -\frac{2}{N} \sum x(y_{true}-mx-c)\)<br><br>
+
+    <hr>
+    <div style="height: 250px;"></div>
+    \(\displaystyle \triangle c = \frac{d}{dc} \left\{ \frac{1}{N} \sum (y_{true} - mx -c)^2 \right\}\)<br><br>
+
+    \(\displaystyle = \frac{1}{N}\frac{d}{dc} \left\{ \sum (y_{true} - mx -c)^2 \right\}\)<br><br>
+
+    \(\displaystyle = \frac{1}{N} \sum \frac{d}{dc} (y_{true} - mx -c)^2\)<br><br>
+
+    \(\displaystyle = \frac{1}{N} \sum \left\{ (y_{true} - mx -c) \cdot \frac{d}{dc}(-c) \right\}\)<br><br>
+
+    \(\displaystyle = \frac{1}{N} \sum \left\{ (y_{true} - mx -c) \cdot (-1) \right\}\)<br><br>
+
+    \(\displaystyle \triangle c = -\frac{2}{N} \sum(y_{true}-mx-c)\)<br><br>
+    <hr>
+    <h2>Rust Code</h2>
+<pre>
+<code id="htmlViewer" style="color:rgb(56, 58, 66); font-weight:400;background-color:rgb(250, 250, 250);background:rgb(250, 250, 250);display:block;padding: .5em;"><span style="color:rgb(64, 120, 242); font-weight:400;">#[no_mangle]</span>
+<span style="color:rgb(166, 38, 164); font-weight:400;">pub</span> <span style="color:rgb(166, 38, 164); font-weight:400;">extern</span> <span style="color:rgb(80, 161, 79); font-weight:400;">&quot;C&quot;</span> <span style="color:rgb(166, 38, 164); font-weight:400;">fn</span> <span class="hljs-title function_">f</span>(arr: *<span style="color:rgb(166, 38, 164); font-weight:400;">const</span> <span style="color:rgb(152, 104, 1); font-weight:400;">f64</span>, length:<span style="color:rgb(152, 104, 1); font-weight:400;">usize</span>) <span style="color:rgb(56, 58, 66); font-weight:400;">-&gt;</span> * <span style="color:rgb(166, 38, 164); font-weight:400;">const</span> <span style="color:rgb(152, 104, 1); font-weight:400;">f64</span>{
+
+    <span style="color:rgb(160, 161, 167); font-weight:400;">// get data from python</span>
+    <span style="color:rgb(166, 38, 164); font-weight:400;">let</span> <span style="color:rgb(152, 104, 1); font-weight:400;">slice</span> = <span style="color:rgb(166, 38, 164); font-weight:400;">unsafe</span>{std::slice::<span class="hljs-title function_ invoke__">from_raw_parts</span>(arr, length)};
+
+    <span style="color:rgb(160, 161, 167); font-weight:400;">// converting that data to x and y</span>
+    <span style="color:rgb(166, 38, 164); font-weight:400;">let</span> <span style="color:rgb(152, 104, 1); font-weight:400;">x</span> = slice[..length/<span style="color:rgb(152, 104, 1); font-weight:400;">2</span>].<span class="hljs-title function_ invoke__">to_vec</span>();
+    <span style="color:rgb(166, 38, 164); font-weight:400;">let</span> <span style="color:rgb(152, 104, 1); font-weight:400;">y</span> = slice[length/<span style="color:rgb(152, 104, 1); font-weight:400;">2</span>..].<span class="hljs-title function_ invoke__">to_vec</span>();
+
+    <span style="color:rgb(160, 161, 167); font-weight:400;">// initializing the variables</span>
+    <span style="color:rgb(166, 38, 164); font-weight:400;">let</span> <span style="color:rgb(166, 38, 164); font-weight:400;">mut </span><span style="color:rgb(152, 104, 1); font-weight:400;">m</span> = <span style="color:rgb(152, 104, 1); font-weight:400;">0.0</span>;
+    <span style="color:rgb(166, 38, 164); font-weight:400;">let</span> <span style="color:rgb(166, 38, 164); font-weight:400;">mut </span><span style="color:rgb(152, 104, 1); font-weight:400;">c</span> = <span style="color:rgb(152, 104, 1); font-weight:400;">0.0</span>;
+    <span style="color:rgb(166, 38, 164); font-weight:400;">const</span> LR:<span style="color:rgb(152, 104, 1); font-weight:400;">f64</span> = <span style="color:rgb(152, 104, 1); font-weight:400;">0.0001</span>;
+    <span style="color:rgb(160, 161, 167); font-weight:400;">// println!(&quot;m:{}, c:{}, Loss: {}&quot;, m, c, loss(&amp;y, &amp;x, m, c));</span>
+    <span style="color:rgb(166, 38, 164); font-weight:400;">let</span> <span style="color:rgb(166, 38, 164); font-weight:400;">mut </span><span style="color:rgb(152, 104, 1); font-weight:400;">low_loss</span> = <span class="hljs-title function_ invoke__">loss</span>(&amp;y, &amp;x, m, c);
+    <span style="color:rgb(166, 38, 164); font-weight:400;">let</span> <span style="color:rgb(166, 38, 164); font-weight:400;">mut </span><span style="color:rgb(152, 104, 1); font-weight:400;">corret_m</span> = <span style="color:rgb(152, 104, 1); font-weight:400;">0.0</span>;
+    <span style="color:rgb(166, 38, 164); font-weight:400;">let</span> <span style="color:rgb(166, 38, 164); font-weight:400;">mut </span><span style="color:rgb(152, 104, 1); font-weight:400;">corret_c</span> = <span style="color:rgb(152, 104, 1); font-weight:400;">0.0</span>;
+
+    <span style="color:rgb(160, 161, 167); font-weight:400;">// iteration</span>
+    <span style="color:rgb(166, 38, 164); font-weight:400;">for</span> <span style="color:rgb(152, 104, 1); font-weight:400;">_</span> <span style="color:rgb(166, 38, 164); font-weight:400;">in</span> <span style="color:rgb(152, 104, 1); font-weight:400;">0</span>..<span style="color:rgb(152, 104, 1); font-weight:400;">100000</span> {
+        <span style="color:rgb(166, 38, 164); font-weight:400;">let</span> <span style="color:rgb(166, 38, 164); font-weight:400;">mut </span><span style="color:rgb(152, 104, 1); font-weight:400;">temp_m</span> = <span style="color:rgb(152, 104, 1); font-weight:400;">0.0</span>;
+        <span style="color:rgb(166, 38, 164); font-weight:400;">let</span> <span style="color:rgb(166, 38, 164); font-weight:400;">mut </span><span style="color:rgb(152, 104, 1); font-weight:400;">temp_c</span> = <span style="color:rgb(152, 104, 1); font-weight:400;">0.0</span>;
+        <span style="color:rgb(166, 38, 164); font-weight:400;">for</span> <span style="color:rgb(152, 104, 1); font-weight:400;">i</span> <span style="color:rgb(166, 38, 164); font-weight:400;">in</span> <span style="color:rgb(152, 104, 1); font-weight:400;">0</span>..length/<span style="color:rgb(152, 104, 1); font-weight:400;">2</span> {
+            temp_m = x[i]*(y[i]-m*x[i]-c);
+            temp_c = y[i]-m*x[i]-c;
+        }
+        m -= LR * -<span style="color:rgb(152, 104, 1); font-weight:400;">2.0</span> * temp_m / (length <span style="color:rgb(166, 38, 164); font-weight:400;">as</span> <span style="color:rgb(152, 104, 1); font-weight:400;">f64</span>); <span style="color:rgb(160, 161, 167); font-weight:400;">// update m</span>
+        c -= LR * -<span style="color:rgb(152, 104, 1); font-weight:400;">2.0</span> * temp_c / (length <span style="color:rgb(166, 38, 164); font-weight:400;">as</span> <span style="color:rgb(152, 104, 1); font-weight:400;">f64</span>); <span style="color:rgb(160, 161, 167); font-weight:400;">// update c</span>
+        <span style="color:rgb(166, 38, 164); font-weight:400;">if</span> low_loss &gt; <span class="hljs-title function_ invoke__">loss</span>(&amp;y, &amp;x, m, c) {
+            low_loss = <span class="hljs-title function_ invoke__">loss</span>(&amp;y, &amp;x, m, c);
+            corret_m = m; <span style="color:rgb(160, 161, 167); font-weight:400;">// take the best m value</span>
+            corret_c = c; <span style="color:rgb(160, 161, 167); font-weight:400;">// take the best c value</span>
+        }
+        <span style="color:rgb(160, 161, 167); font-weight:400;">// println!(&quot;m:{}, c:{}, Loss: {}&quot;, m, c, loss(&amp;y, &amp;x, m, c));</span>
+    }
+
+    <span style="color:rgb(160, 161, 167); font-weight:400;">// strore the values in vector</span>
+    <span style="color:rgb(166, 38, 164); font-weight:400;">let</span> <span style="color:rgb(152, 104, 1); font-weight:400;">v</span> = <span style="color:rgb(193, 132, 1); font-weight:400;">vec!</span>[corret_m,corret_c];
+    <span style="color:rgb(166, 38, 164); font-weight:400;">let</span> <span style="color:rgb(152, 104, 1); font-weight:400;">output</span> = v.<span class="hljs-title function_ invoke__">as_ptr</span>();
+    std::mem::<span class="hljs-title function_ invoke__">forget</span>(v);
+
+    <span style="color:rgb(160, 161, 167); font-weight:400;">// return output as pointer f64</span>
+    output
+}
+
+<span style="color:rgb(166, 38, 164); font-weight:400;">fn</span> <span class="hljs-title function_">loss</span>(y:&amp;<span style="color:rgb(152, 104, 1); font-weight:400;">Vec</span>&lt;<span style="color:rgb(152, 104, 1); font-weight:400;">f64</span>&gt;, x:&amp;<span style="color:rgb(152, 104, 1); font-weight:400;">Vec</span>&lt;<span style="color:rgb(152, 104, 1); font-weight:400;">f64</span>&gt;, m:<span style="color:rgb(152, 104, 1); font-weight:400;">f64</span>, c:<span style="color:rgb(152, 104, 1); font-weight:400;">f64</span>) <span style="color:rgb(56, 58, 66); font-weight:400;">-&gt;</span> <span style="color:rgb(152, 104, 1); font-weight:400;">f64</span> {
+    <span style="color:rgb(166, 38, 164); font-weight:400;">let</span> <span style="color:rgb(166, 38, 164); font-weight:400;">mut </span><span style="color:rgb(152, 104, 1); font-weight:400;">l</span> = <span style="color:rgb(152, 104, 1); font-weight:400;">0.0</span>;
+    <span style="color:rgb(166, 38, 164); font-weight:400;">for</span> <span style="color:rgb(152, 104, 1); font-weight:400;">i</span> <span style="color:rgb(166, 38, 164); font-weight:400;">in</span> <span style="color:rgb(152, 104, 1); font-weight:400;">0</span>..y.<span class="hljs-title function_ invoke__">len</span>() {
+        l += (y[i] - m*x[i] - c).<span class="hljs-title function_ invoke__">powi</span>(<span style="color:rgb(152, 104, 1); font-weight:400;">2</span>);
+    }
+    l / (y.<span class="hljs-title function_ invoke__">len</span>() <span style="color:rgb(166, 38, 164); font-weight:400;">as</span> <span style="color:rgb(152, 104, 1); font-weight:400;">f64</span>)
+}</code></pre>
+<hr>
+    <h2>linear_reg.py</h2>
+<pre>
+<code id="htmlViewer" style="color:rgb(56, 58, 66); font-weight:400;background-color:rgb(250, 250, 250);background:rgb(250, 250, 250);display:block;padding: .5em;"><span style="color:rgb(166, 38, 164); font-weight:400;">from</span> ctypes <span style="color:rgb(166, 38, 164); font-weight:400;">import</span> *
+<span style="color:rgb(166, 38, 164); font-weight:400;">import</span> random
+<span style="color:rgb(166, 38, 164); font-weight:400;">import</span> numpy <span style="color:rgb(166, 38, 164); font-weight:400;">as</span> np
+
+<span style="color:rgb(160, 161, 167); font-weight:400;"># random.seed(0)</span>
+clib = CDLL(<span style="color:rgb(80, 161, 79); font-weight:400;">&quot;./target/release/liblinear_regression1.so&quot;</span>)
+clib.f.argtypes = [POINTER(c_double), c_int]
+clib.f.restype = POINTER(c_double)
+
+<span style="color:rgb(166, 38, 164); font-weight:400;">def</span> <span class="hljs-title function_">random_points</span>(<span style="color:rgb(56, 58, 66); font-weight:400;">m:<span style="color:rgb(193, 132, 1); font-weight:400;">int</span> <span style="color:rgb(166, 38, 164); font-weight:400;">or</span> <span style="color:rgb(193, 132, 1); font-weight:400;">float</span>, c:<span style="color:rgb(193, 132, 1); font-weight:400;">int</span> <span style="color:rgb(166, 38, 164); font-weight:400;">or</span> <span style="color:rgb(193, 132, 1); font-weight:400;">float</span>, d:<span style="color:rgb(193, 132, 1); font-weight:400;">tuple</span>, n:<span style="color:rgb(193, 132, 1); font-weight:400;">int</span></span>):
+    y = <span style="color:rgb(166, 38, 164); font-weight:400;">lambda</span> x: m * x + c + random.uniform(d[<span style="color:rgb(152, 104, 1); font-weight:400;">0</span>], d[<span style="color:rgb(152, 104, 1); font-weight:400;">1</span>])
+    x_list = <span style="color:rgb(193, 132, 1); font-weight:400;">list</span>(<span style="color:rgb(193, 132, 1); font-weight:400;">range</span>(n))
+    y_list = <span style="color:rgb(193, 132, 1); font-weight:400;">list</span>(<span style="color:rgb(193, 132, 1); font-weight:400;">map</span>(y, x_list))
+    <span style="color:rgb(166, 38, 164); font-weight:400;">return</span> x_list, y_list
+
+<span style="color:rgb(166, 38, 164); font-weight:400;">def</span> <span class="hljs-title function_">rustLr</span>(<span style="color:rgb(56, 58, 66); font-weight:400;">x, y</span>):
+    combined_list = x + y
+    l = ( c_double * <span style="color:rgb(193, 132, 1); font-weight:400;">len</span>(combined_list) )(*combined_list)
+    result = clib.f(l, <span style="color:rgb(193, 132, 1); font-weight:400;">len</span>(combined_list))
+    <span style="color:rgb(166, 38, 164); font-weight:400;">return</span> result[<span style="color:rgb(152, 104, 1); font-weight:400;">0</span>], result[<span style="color:rgb(152, 104, 1); font-weight:400;">1</span>]
+</code></pre>
+<hr>
+<h2>main.py</h2>
+<pre>
+<code id="htmlViewer" style="color:rgb(56, 58, 66); font-weight:400;background-color:rgb(250, 250, 250);background:rgb(250, 250, 250);display:block;padding: .5em;"><span style="color:rgb(166, 38, 164); font-weight:400;">import</span> matplotlib.pyplot <span style="color:rgb(166, 38, 164); font-weight:400;">as</span> plt
+<span style="color:rgb(166, 38, 164); font-weight:400;">from</span> linear_reg <span style="color:rgb(166, 38, 164); font-weight:400;">import</span> random_points, rustLr
+<span style="color:rgb(166, 38, 164); font-weight:400;">import</span> random
+random.seed(<span style="color:rgb(152, 104, 1); font-weight:400;">10</span>)
+<span style="color:rgb(160, 161, 167); font-weight:400;"># import numpy as np</span>
+
+x, y = random_points(<span style="color:rgb(152, 104, 1); font-weight:400;">1</span>, <span style="color:rgb(152, 104, 1); font-weight:400;">1</span>, (-<span style="color:rgb(152, 104, 1); font-weight:400;">50</span>, <span style="color:rgb(152, 104, 1); font-weight:400;">50</span>), <span style="color:rgb(152, 104, 1); font-weight:400;">100</span>)
+m, c = rustLr(x, y)
+
+x1 = <span style="color:rgb(193, 132, 1); font-weight:400;">list</span>(<span style="color:rgb(193, 132, 1); font-weight:400;">range</span>(<span style="color:rgb(193, 132, 1); font-weight:400;">int</span>(<span style="color:rgb(193, 132, 1); font-weight:400;">min</span>(x))-<span style="color:rgb(152, 104, 1); font-weight:400;">1</span>, <span style="color:rgb(193, 132, 1); font-weight:400;">int</span>(<span style="color:rgb(193, 132, 1); font-weight:400;">max</span>(x))+<span style="color:rgb(152, 104, 1); font-weight:400;">2</span>))
+y1 = [m*i+c <span style="color:rgb(166, 38, 164); font-weight:400;">for</span> i <span style="color:rgb(166, 38, 164); font-weight:400;">in</span> x1]
+
+<span style="color:rgb(160, 161, 167); font-weight:400;"># k, d = np.polyfit(x, y, 1)</span>
+
+<span style="color:rgb(160, 161, 167); font-weight:400;"># x2 = x1</span>
+<span style="color:rgb(160, 161, 167); font-weight:400;"># y2 = [k*i+d for i in x1]</span>
+
+plt.subplots(figsize=(<span style="color:rgb(152, 104, 1); font-weight:400;">15</span>,<span style="color:rgb(152, 104, 1); font-weight:400;">10</span>))
+plt.plot(x, y, <span style="color:rgb(80, 161, 79); font-weight:400;">&#x27;o&#x27;</span>)
+plt.plot(x1, y1, color=<span style="color:rgb(80, 161, 79); font-weight:400;">&#x27;red&#x27;</span>)
+<span style="color:rgb(160, 161, 167); font-weight:400;"># plt.plot(x2, y2, color=&#x27;green&#x27;)</span>
+plt.savefig(<span style="color:rgb(80, 161, 79); font-weight:400;">&#x27;graph.jpg&#x27;</span>)
+plt.close()</code></pre>
+</body>
+
+</html>

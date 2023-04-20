@@ -1,4 +1,3 @@
-
 import matplotlib.pyplot as plt
 from linear_reg import random_points, rustLr
 import random
