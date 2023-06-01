@@ -71,10 +71,10 @@ let ytrue = rand_array();
 
 $$Y predict, \hat{Y} = 
 \begin{bmatrix}
-\hat{y}_{11} \\
-\hat{y}_{21} \\
+\hat{y_{11}} \\
+\hat{y_{21}} \\
 \vdots \\
-\hat{y}_{i1}
+\hat{y_{i1}}
 \end{bmatrix}
 $$
 
@@ -108,7 +108,7 @@ $$
 **Summation Equation:**
 
 $$
-\hat{y}_{i1} = \sum_{n=1}^{j} w_{in}.x_{n1}
+\hat{y_{i1}} = \sum_{n=1}^{j} w_{in}.x_{n1}
 $$
 
 ```rust
@@ -150,6 +150,7 @@ fn loss(ytrue: &[[f64; 1]; 3], y: &[[f64; 1]; 3]) -> f64 {
 ```
 
 **Grad:**
+
 $$
 \frac{d(loss)}{d(w_{ij})} = \frac{d}{d(w_{ij})} \left[ \frac{1}{N} \sum_{m=1}^{i} \left( y_{m1} - \sum_{n=1}^{j} w_{mn}.x_{n1} \right)^2 \right]
 $$
