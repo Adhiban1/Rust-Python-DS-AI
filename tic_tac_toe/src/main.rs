@@ -32,6 +32,7 @@ fn main() {
         loop {
             x.play(&mut game);
             if game.isgameover() {
+                println!("\nAI:");
                 game.print();
                 println!("Winner: {}\n", game.winner());
                 break;
@@ -42,6 +43,7 @@ fn main() {
             
             game.human_play('o');
             if game.isgameover() {
+                println!("\nHuman: ");
                 game.print();
                 println!("Winner: {}\n", game.winner());
                 break;
